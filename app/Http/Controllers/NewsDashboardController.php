@@ -1,0 +1,157 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use TCPDF;
+use App\Models\News;
+use App\Models\User;
+use App\Models\Category;
+use Barryvdh\Snappy\Facades\SnappyPdf;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Storage;
+use \Cviebrock\EloquentSluggable\Services\SlugService;
+
+
+class NewsDashboardController extends Controller
+{
+
+    public function index(Request $request)
+    {
+        $sort = $request->query('sort') == 'desc' ? 'desc' : 'asc';
+    $search = $request->query('search');
+
+    $news = News::where('user_id', auth()->user()->id)
+        ->when($search, function ($query) use ($search) {
+            return $query->where('title', 'like', '%' . $search . '%');
+        })
+        ->orderBy('title', $sort)
+        ->get();
+
+    return view('dashboard.news.index', compact('news'));
+
+    }
+
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $news = $user->news; // Mengambil daftar sponsor yang sudah diambil oleh user
+
+        return view('dashboard.index', [
+            'user' => $user,
+            'news' => $news,
+        ]);
+    }
+
+
+    /**
+     * Show the form for creating a new resource.
+     */
+
+    public function create()
+    {
+        // Tidak perlu lagi melewati informasi kategori ke view
+        return view('dashboard.news.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'title' => 'required|max:255',
+            'slug' => 'required|unique:sponsors',
+            'image' => 'image|file|max:51200',
+            'body' => 'required',
+        ]);
+
+        if ($request->file('image')) {
+            $validatedData['image'] = $request->file('image')->store('sponsor-images');
+        }
+
+        $validatedData['user_id'] = auth()->user()->id;
+        $validatedData['excerpt'] = Str::limit(strip_tags($request->body), 100);
+
+        News::create($validatedData);
+
+        return redirect('/dashboard/news')->with('success', 'News has been added!');
+    }
+
+    public function show(News $news)
+    {
+        return view('dashboard.news.show', [
+            'news' => $news
+        ]);
+    }
+
+    public function edit(News $news)
+    {
+        return view('dashboard.news.edit', [
+            'news' => $news
+        ]);
+    }
+
+    public function update(Request $request, News $news)
+    {
+        $rules = [
+            'title' => 'required|max:255',
+            'image' => 'image|file|max:51200',
+            'body' => 'required'
+        ];
+
+        if ($request->slug != $news->slug) {
+            $rules['slug'] = 'required|unique:news';
+        }
+
+        $validatedData = $request->validate($rules);
+
+        if ($request->file('image')) {
+            // Sesuaikan pengelolaan gambar sesuai kebutuhan Anda
+            // Jangan lupa untuk menghapus gambar yang lama jika diperlukan
+            // Contoh: Storage::delete($sponsor->image);
+            $validatedData['image'] = $request->file('image')->store('sponsor-images');
+        }
+
+        $validatedData['user_id'] = auth()->user()->id;
+        $validatedData['excerpt'] = Str::limit(strip_tags($request->body), 200);
+
+        $news->update($validatedData);
+
+        return redirect('/dashboard/news')->with('success', 'News has been updated!');
+    }
+
+    public function destroy(News $news)
+    {
+        // Sesuaikan penghapusan file gambar jika diperlukan
+        // Contoh: if ($sponsor->image) { Storage::delete($sponsor->image); }
+
+        $news->delete();
+
+        return redirect('/dashboard/news')->with('success', 'News has been deleted!');
+    }
+
+    public function checkSlug(Request $request)
+    {
+        $slug = SlugService::createSlug(News::class, 'slug', $request->title);
+        return response()->json(['slug' => $slug]);
+    }
+
+    public function pdfReport()
+    {
+        $news = News::where('user_id', auth()->user()->id)->get();
+
+        $data = [
+            'news' => $news,
+        ];
+
+        $pdf = new TCPDF();
+        $pdf->SetHeaderData('', 0, 'News Report', '');
+        $pdf->AddPage();
+        $pdf->writeHTML(View::make('dashboard.news.pdf', $data)->render());
+
+        return new Response($pdf->Output('news_report.pdf', 'D'), 200, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+}

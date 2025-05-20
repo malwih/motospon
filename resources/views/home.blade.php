@@ -294,7 +294,7 @@
 
                 <h2 class="mt-4 text-lg font-medium text-orange-500 dark:text-orange">Email</h2>
                 <p class="mt-2 text-gray-900 dark:text-gray-800">Our friendly team is here to help.</p>
-                <p class="mt-2 text-blue-900 dark:text-blue-800">lefranceproducts@gmail.com</p>
+                <p class="mt-2 text-blue-900 dark:text-blue-800">lefrancesponsors@gmail.com</p>
             </div>
 
             <div class="flex flex-col items-center justify-center text-center">

@@ -5,13 +5,13 @@ use App\Models\Category;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\NewsDashboardController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DashboardProductshipController;
+use App\Http\Controllers\DashboardSponsorshipController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,15 +31,15 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{product:slug}', [ProductController::class, 'show']);
+Route::get('/sponsors', [SponsorController::class, 'index']);
+Route::get('/sponsors/{sponsor:slug}', [SponsorController::class, 'show']);
 
 Route::get('/news', [NewsController::class, 'index']);
 Route::get('/news/{news:slug}', [NewsController::class, 'show']);
 
 Route::get('/categories', function () {
     return view('categories', [
-        'title' => 'Product Categories',
+        'title' => 'Sponsor Categories',
         'categories' => Category::all()
     ]);
 });
@@ -76,17 +76,17 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('account.type')
         ->name('dashboard');
 
-    // // Productship page
-    // Route::get('/dashboard/productship', [DashboardProductshipController::class, 'index'])->name('dashboard.productship');
+    // // Sponsorship page
+    // Route::get('/dashboard/sponsorship', [DashboardSponsorshipController::class, 'index'])->name('dashboard.sponsorship');
 
-    // Tambah Product
-    Route::get('/dashboard/addproduct', [DashboardController::class, 'addproduct'])->name('addproduct');
-    Route::post('/dashboard/addproduct', [DashboardController::class, 'storeProduct'])->name('products.store');
-    Route::post('/products/take', [DashboardController::class, 'takeProduct'])->name('products.take');
+    // Tambah Sponsor
+    Route::get('/dashboard/addsponsor', [DashboardController::class, 'addsponsor'])->name('addsponsor');
+    Route::post('/dashboard/addsponsor', [DashboardController::class, 'storeSponsor'])->name('sponsors.store');
+    Route::post('/sponsors/take', [DashboardController::class, 'takeSponsor'])->name('sponsors.take');
 
-    // Ambil product (langsung dari halaman product)
-    Route::get('/product/{id}/take', [ProductController::class, 'take'])->name('product.take');
-    Route::get('/product/{id}/complete', [ProductController::class, 'complete'])->name('product.complete');
+    // Ambil sponsor (langsung dari halaman sponsor)
+    Route::get('/sponsor/{id}/take', [SponsorController::class, 'take'])->name('sponsor.take');
+    Route::get('/sponsor/{id}/complete', [SponsorController::class, 'complete'])->name('sponsor.complete');
 
     // My Profile
     Route::get('/dashboard/myprofile', [MyProfileController::class, 'index'])->name('myprofile.index');
@@ -101,15 +101,15 @@ Route::middleware(['auth'])->group(function () {
     // Generate PDF untuk berita
     Route::get('/dashboard/news/pdf', [NewsDashboardController::class, 'pdfReport'])->name('pdfReport');
 
-    // Cek slug product
-    Route::get('/dashboard/products/checkSlug', [DashboardController::class, 'checkSlug']);
+    // Cek slug sponsor
+    Route::get('/dashboard/sponsors/checkSlug', [DashboardController::class, 'checkSlug']);
 });
 
 /** ================================
  *  Resource Controllers
  *  ================================ */
 Route::middleware(['auth'])->group(function () {
-    Route::resource('/dashboard/products', DashboardController::class);
+    Route::resource('/dashboard/sponsors', DashboardController::class);
     Route::resource('/dashboard/news', NewsDashboardController::class);
 });
 

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\News;
 use App\Models\User;
-use App\Models\Product;
-use App\Models\ProductUser;
+use App\Models\Sponsor;
+use App\Models\SponsorUser;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -26,19 +26,19 @@ class DashboardController extends Controller
         return redirect()->route('choose.account.type');
     }
     
-        return view('dashboard.products.index', [
-            'products' => Product::where('user_id', auth()->user()->id)->get()
+        return view('dashboard.sponsors.index', [
+            'sponsors' => Sponsor::where('user_id', auth()->user()->id)->get()
         ]);
     }
 
     public function dashboard()
     {
         $user = Auth::user();
-        $products = $user->products; // Mengambil daftar product yang sudah diambil oleh user
+        $sponsors = $user->sponsors; // Mengambil daftar sponsor yang sudah diambil oleh user
 
         return view('dashboard.index', [
             'user' => $user,
-            'products' => $products,
+            'sponsors' => $sponsors,
         ]);
     }
 
@@ -50,45 +50,45 @@ class DashboardController extends Controller
     public function create()
     {
         // Tidak perlu lagi melewati informasi kategori ke view
-        return view('dashboard.products.create');
+        return view('dashboard.sponsors.create');
     }
 
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'title' => 'required|max:255',
-            'slug' => 'required|unique:products',
+            'slug' => 'required|unique:sponsors',
             'image' => 'image|file|max:51200',
             'body' => 'required',
         ]);
 
         if ($request->file('image')) {
-            $validatedData['image'] = $request->file('image')->store('product-images');
+            $validatedData['image'] = $request->file('image')->store('sponsor-images');
         }
 
         $validatedData['user_id'] = auth()->user()->id;
         $validatedData['excerpt'] = Str::limit(strip_tags($request->body), 100);
 
-        Product::create($validatedData);
+        Sponsor::create($validatedData);
 
-        return redirect('/dashboard/products')->with('success', 'New product has been added!');
+        return redirect('/dashboard/sponsors')->with('success', 'New sponsor has been added!');
     }
 
-    public function show(Product $product)
+    public function show(Sponsor $sponsor)
     {
-        return view('dashboard.products.show', [
-            'product' => $product
+        return view('dashboard.sponsors.show', [
+            'sponsor' => $sponsor
         ]);
     }
 
-    public function edit(Product $product)
+    public function edit(Sponsor $sponsor)
     {
-        return view('dashboard.products.edit', [
-            'product' => $product
+        return view('dashboard.sponsors.edit', [
+            'sponsor' => $sponsor
         ]);
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Sponsor $sponsor)
     {
         $rules = [
             'title' => 'required|max:255',
@@ -96,8 +96,8 @@ class DashboardController extends Controller
             'body' => 'required'
         ];
 
-        if ($request->slug != $product->slug) {
-            $rules['slug'] = 'required|unique:products';
+        if ($request->slug != $sponsor->slug) {
+            $rules['slug'] = 'required|unique:sponsors';
         }
 
         $validatedData = $request->validate($rules);
@@ -105,108 +105,108 @@ class DashboardController extends Controller
         if ($request->file('image')) {
             // Sesuaikan pengelolaan gambar sesuai kebutuhan Anda
             // Jangan lupa untuk menghapus gambar yang lama jika diperlukan
-            // Contoh: Storage::delete($product->image);
-            $validatedData['image'] = $request->file('image')->store('product-images');
+            // Contoh: Storage::delete($sponsor->image);
+            $validatedData['image'] = $request->file('image')->store('sponsor-images');
         }
 
         $validatedData['user_id'] = auth()->user()->id;
         $validatedData['excerpt'] = Str::limit(strip_tags($request->body), 200);
 
-        $product->update($validatedData);
+        $sponsor->update($validatedData);
 
-        return redirect('/dashboard/products')->with('success', 'Class has been updated!');
+        return redirect('/dashboard/sponsors')->with('success', 'Class has been updated!');
     }
 
-    public function destroy(Product $product)
+    public function destroy(Sponsor $sponsor)
     {
         // Sesuaikan penghapusan file gambar jika diperlukan
-        // Contoh: if ($product->image) { Storage::delete($product->image); }
+        // Contoh: if ($sponsor->image) { Storage::delete($sponsor->image); }
 
-        $product->delete();
+        $sponsor->delete();
 
-        return redirect('/dashboard/products')->with('success', 'Class has been deleted!');
+        return redirect('/dashboard/sponsors')->with('success', 'Class has been deleted!');
     }
 
     public function checkSlug(Request $request)
     {
-        $slug = SlugService::createSlug(Product::class, 'slug', $request->title);
+        $slug = SlugService::createSlug(Sponsor::class, 'slug', $request->title);
         return response()->json(['slug' => $slug]);
     }
 
-    // public function addproduct(Product $product)
+    // public function addsponsor(Sponsor $sponsor)
     // {
-    //     return view('dashboard.addproduct', [
-    //         'product' => $product
+    //     return view('dashboard.addsponsor', [
+    //         'sponsor' => $sponsor
     //     ]);
     // }
 
-    public function addproduct()
+    public function addsponsor()
     {
-        $products = Product::all();
+        $sponsors = Sponsor::all();
 
-        return view('dashboard.addproduct', [
-            'products' => $products
+        return view('dashboard.addsponsor', [
+            'sponsors' => $sponsors
         ]);
     }
 
-    public function takeProduct(Request $request)
+    public function takeSponsor(Request $request)
     {
         $validatedData = $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'sponsor_id' => 'required|exists:sponsors,id',
             'schedule' => 'required',
             'price' => 'required',
         ]);
 
         $user = auth()->user();
 
-        // Periksa apakah pengguna memiliki kursus yang aktif pada ProductUser
-        $activeProduct = ProductUser::where('user_id', $user->id)
+        // Periksa apakah pengguna memiliki kursus yang aktif pada SponsorUser
+        $activeSponsor = SponsorUser::where('user_id', $user->id)
             ->where('is_active', true)
             ->first();
 
-        if ($activeProduct) {
+        if ($activeSponsor) {
             return back()->with('error', 'Anda masih memiliki kursus yang aktif lainnya.');
         }
 
-        // Simpan data ke pivot table product_user
-        $productUser = ProductUser::create([
-            'product_id' => $validatedData['product_id'],
+        // Simpan data ke pivot table sponsor_user
+        $sponsorUser = SponsorUser::create([
+            'sponsor_id' => $validatedData['sponsor_id'],
             'user_id' => $user->id,
             'is_active' => true,
             'is_completed' => false,
         ]);
 
-        if ($productUser) {
-            return redirect()->route('dashboard')->with('success', 'Product added successfully.');
+        if ($sponsorUser) {
+            return redirect()->route('dashboard')->with('success', 'Sponsor added successfully.');
         } else {
-            return back()->with('error', 'Failed to add product.');
+            return back()->with('error', 'Failed to add sponsor.');
         }
     }
 
 
-    public function storeProduct(Request $request)
+    public function storeSponsor(Request $request)
     {
         $validatedData = $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'sponsor_id' => 'required|exists:sponsors,id',
             'schedule' => 'required',
             'price' => 'required',
         ]);
 
         $user = auth()->user();
 
-        // Simpan data ke pivot table product_user
-        $productUser = ProductUser::create([
-            'product_id' => $validatedData['product_id'],
+        // Simpan data ke pivot table sponsor_user
+        $sponsorUser = SponsorUser::create([
+            'sponsor_id' => $validatedData['sponsor_id'],
             'user_id' => $user->id,
             'is_active' => true, // Atur status aktif ke true jika baru ditambahkan
             'is_completed' => false, // Default nilai is_completed ke false
             // ... (menambahkan field lainnya)
         ]);
 
-        if ($productUser) {
-            return back()->with('success', 'Product added successfully.');
+        if ($sponsorUser) {
+            return back()->with('success', 'Sponsor added successfully.');
         } else {
-            return back()->with('error', 'Failed to add product.');
+            return back()->with('error', 'Failed to add sponsor.');
         }
     }
 }

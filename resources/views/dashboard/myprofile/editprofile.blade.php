@@ -51,11 +51,7 @@
                 <div class="px-6 py-6">
                     <dl class="divide-y divide-gray-200">
 
-                        @foreach ([
-                            'name' => 'Full Name',
-                            'username' => 'Username',
-                            'email' => 'Email'
-                        ] as $field => $label)
+                        @foreach (['name' => 'Full Name', 'username' => 'Username', 'email' => 'Email'] as $field => $label)
                         <div class="py-4 grid grid-cols-3 gap-4 items-center">
                             <dt class="text-sm font-medium text-gray-600">{{ $label }}</dt>
                             <dd class="col-span-2">
@@ -72,6 +68,7 @@
                         </div>
                         @endforeach
 
+                        {{-- New Password --}}
                         <div class="py-4 grid grid-cols-3 gap-4 items-center">
                             <dt class="text-sm font-medium text-gray-600">New Password</dt>
                             <dd class="col-span-2">
@@ -84,6 +81,7 @@
                             </dd>
                         </div>
 
+                        {{-- Confirm Password --}}
                         <div class="py-4 grid grid-cols-3 gap-4 items-center">
                             <dt class="text-sm font-medium text-gray-600">Confirm Password</dt>
                             <dd class="col-span-2">
@@ -92,14 +90,21 @@
                                        placeholder="(Optional)">
                             </dd>
                         </div>
+
                     </dl>
                 </div>
             </div>
 
-            {{-- Submit Button --}}
-            <button type="submit" class="block w-full bg-orange-500 mt-6 py-3 rounded-2xl text-white font-semibold hover:bg-orange-600 transition duration-300">
+            {{-- Buttons --}}
+            <button type="submit"
+                class="block w-full bg-orange-500 mt-6 py-3 rounded-2xl text-white font-semibold hover:bg-orange-600 transition duration-300">
                 Update Profile
             </button>
+
+            <a href="/dashboard/myprofile"
+                class="block w-full mt-4 py-3 rounded-2xl text-center bg-blue-500 text-white font-semibold hover:bg-blue-700 transition duration-300">
+                Back
+            </a>
         </form>
     </div>
 </div>

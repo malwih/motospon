@@ -7,7 +7,7 @@
   <!-- Navigation -->
   <nav class="hidden md:flex ml-6 space-x-4 font-semibold text-base lg:text-lg text-orange-500">
     <a href="/" class="px-3 py-3 hover:bg-gray-300 rounded">Home</a>
-    <a href="/products" class="px-3 py-3 hover:bg-gray-300 rounded {{ request()->is('products') ? 'bg-gray-300' : '' }}">Sponsors</a>
+    <a href="/sponsors" class="px-3 py-3 hover:bg-gray-300 rounded {{ request()->is('sponsors') ? 'bg-gray-300' : '' }}">Sponsorship</a>
     <a href="/news" class="px-3 py-3 hover:bg-gray-300 rounded {{ request()->is('news') ? 'bg-gray-300' : '' }}">News</a>
   </nav>
 
@@ -55,7 +55,7 @@
 <nav id="mobileMenu" class="hidden md:hidden fixed top-14 left-0 w-full bg-white border-b shadow-lg z-30">
   <ul class="flex flex-col text-orange-500 font-semibold text-base">
     <li><a href="/" class="block px-4 py-3 hover:bg-gray-300 {{ request()->is('/') ? 'bg-gray-300' : '' }}">Home</a></li>
-    <li><a href="/products" class="block px-4 py-3 hover:bg-gray-300 {{ request()->is('products') ? 'bg-gray-300' : '' }}">Sponsors</a></li>
+    <li><a href="/sponsors" class="block px-4 py-3 hover:bg-gray-300 {{ request()->is('sponsors') ? 'bg-gray-300' : '' }}">Sponsors</a></li>
     <li><a href="/news" class="block px-4 py-3 hover:bg-gray-300 {{ request()->is('news') ? 'bg-gray-300' : '' }}">News</a></li>
     @auth
     <li><a href="/dashboard" class="block px-4 py-3 hover:bg-gray-300">My Dashboard</a></li>

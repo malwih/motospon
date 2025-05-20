@@ -46,16 +46,6 @@
                         <dt class="text-base font-semibold text-gray-600">Email</dt>
                         <dd class="text-base text-gray-900 col-span-2">{{ $user->email }}</dd>
                     </div>
-                    <div class="py-4 grid grid-cols-3 gap-6">
-                        <dt class="text-base font-semibold text-gray-600">Course Taken</dt>
-                        <dd class="text-base text-gray-900 col-span-2">
-                            @forelse ($user->sponsors as $sponsor)
-                                {{ $sponsor->title }}@if(!$loop->last), @endif
-                            @empty
-                                No sponsors taken yet.
-                            @endforelse
-                        </dd>
-                    </div>
                 </dl>
             </div>
         </div>

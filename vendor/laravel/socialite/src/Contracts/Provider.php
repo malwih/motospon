@@ -17,6 +17,4 @@ interface Provider
      * @return \Laravel\Socialite\Contracts\User
      */
     public function user();
-
-    public function stateless();
 }

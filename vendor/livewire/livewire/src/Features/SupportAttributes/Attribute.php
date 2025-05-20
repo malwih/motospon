@@ -59,35 +59,43 @@ abstract class Attribute
         return data_get($this->component->all(), $this->levelName);
     }
 
-    function setValue($value)
+    function setValue($value, ?bool $nullable = false)
     {
         if ($this->level !== AttributeLevel::PROPERTY) {
             throw new \Exception('Can\'t set the value of a non-property attribute.');
         }
 
-        if ($enum = $this->tryingToSetStringToEnum($value)) {
-            $value = $enum::from($value);
+        if ($enum = $this->tryingToSetStringOrIntegerToEnum($value)) {
+            if($nullable) {
+                $value = $enum::tryFrom($value);
+            }
+
+            else {
+                $value = $enum::from($value);
+            }
         }
 
         data_set($this->component, $this->levelName, $value);
     }
 
-    protected function tryingToSetStringToEnum($subject)
+    protected function tryingToSetStringOrIntegerToEnum($subject)
     {
-        if (! is_string($subject)) return;
+        if (! is_string($subject) && ! is_int($subject)) return;
 
         $target = $this->subTarget ?? $this->component;
 
         $name = $this->subName ?? $this->levelName;
 
-        $reflection = new \ReflectionProperty($target, $name);
+        $property = str($name)->before('.')->toString();
+
+        $reflection = new \ReflectionProperty($target, $property);
 
         $type = $reflection->getType();
 
         // If the type is available, display its name
         if ($type instanceof \ReflectionNamedType) {
             $name = $type->getName();
-            
+
             // If the type is a BackedEnum then return it's name
             if (is_subclass_of($name, \BackedEnum::class)) {
                 return $name;

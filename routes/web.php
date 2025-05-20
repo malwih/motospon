@@ -10,7 +10,7 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\NewsDashboardController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardSponsorsController;
 use App\Http\Controllers\DashboardSponsorshipController;
 
 /*
@@ -72,7 +72,7 @@ Route::post('/choose-account-type', [GoogleController::class, 'storeAccountType'
 Route::middleware(['auth'])->group(function () {
 
     // Dashboard utama
-    Route::get('/dashboard', [DashboardController::class, 'index'])
+    Route::get('/dashboard', [DashboardSponsorsController::class, 'dashboard'])
         ->middleware('account.type')
         ->name('dashboard');
 
@@ -80,9 +80,9 @@ Route::middleware(['auth'])->group(function () {
     // Route::get('/dashboard/sponsorship', [DashboardSponsorshipController::class, 'index'])->name('dashboard.sponsorship');
 
     // Tambah Sponsor
-    Route::get('/dashboard/addsponsor', [DashboardController::class, 'addsponsor'])->name('addsponsor');
-    Route::post('/dashboard/addsponsor', [DashboardController::class, 'storeSponsor'])->name('sponsors.store');
-    Route::post('/sponsors/take', [DashboardController::class, 'takeSponsor'])->name('sponsors.take');
+    Route::get('/dashboard/addsponsor', [DashboardSponsorsController::class, 'addsponsor'])->name('addsponsor');
+    Route::post('/dashboard/addsponsor', [DashboardSponsorsController::class, 'storeSponsor'])->name('sponsors.store');
+    Route::post('/sponsors/take', [DashboardSponsorsController::class, 'takeSponsor'])->name('sponsors.take');
 
     // Ambil sponsor (langsung dari halaman sponsor)
     Route::get('/sponsor/{id}/take', [SponsorController::class, 'take'])->name('sponsor.take');
@@ -102,14 +102,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/news/pdf', [NewsDashboardController::class, 'pdfReport'])->name('pdfReport');
 
     // Cek slug sponsor
-    Route::get('/dashboard/sponsors/checkSlug', [DashboardController::class, 'checkSlug']);
+    Route::get('/dashboard/sponsors/checkSlug', [DashboardSponsorsController::class, 'checkSlug']);
+
+    // Preview Proposal
+    Route::post('/dashboard/sponsors/preview-proposal', [DashboardSponsorsController::class, 'previewProposal'])->name('sponsors.previewProposal');
+
 });
 
 /** ================================
  *  Resource Controllers
  *  ================================ */
 Route::middleware(['auth'])->group(function () {
-    Route::resource('/dashboard/sponsors', DashboardController::class);
+    Route::resource('/dashboard/sponsors', DashboardSponsorsController::class);
     Route::resource('/dashboard/news', NewsDashboardController::class);
 });
 

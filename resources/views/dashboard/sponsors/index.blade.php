@@ -31,8 +31,9 @@
                 <thead class="text-sm text-white uppercase bg-gray-700">
                     <tr>
                         <th scope="col" class="px-6 py-3">No</th>
-                        <th scope="col" class="px-6 py-3">Sponsor Name</th>
-                        <th scope="col" class="px-6 py-3">Description</th>
+                        <th scope="col" class="px-6 py-3">Name Sponsor</th>
+                        <th scope="col" class="px-6 py-3">Category</th>
+                        <th scope="col" class="px-6 py-3">Event</th>
                         <th scope="col" class="px-6 py-3">Action</th>
                     </tr>
                 </thead>
@@ -46,7 +47,10 @@
                             {{ $sponsor->title }}
                         </td>
                         <td class="px-6 py-4 max-w-xs">
-                            {{ Str::words(strip_tags($sponsor->body), 10, '...') }}
+                            {{ Str::words(strip_tags($sponsor->category), 3, '...') }}
+                        </td>
+                        <td class="px-6 py-4 max-w-xs">
+                            {{ Str::words(strip_tags($sponsor->event), 3, '...') }}
                         </td>
                         <td class="px-6 py-4 flex space-x-2">
                             <a href="/dashboard/sponsors/{{ $sponsor->slug }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded" title="View">

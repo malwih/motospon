@@ -21,7 +21,15 @@
     @endif
 
     <section class="mb-10 mt-6">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-4">My Proposals</h2>
+      <div class="flex items-center justify-between mb-4">
+  <h2 class="text-2xl font-semibold text-gray-800">My Sponsorships</h2>
+  <a href="{{ route('addsponsor') }}">
+    <button class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg shadow">
+      + Add Sponsor
+    </button>
+  </a>
+</div>
+
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         @forelse ($sponsors as $sponsor)

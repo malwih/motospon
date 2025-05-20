@@ -60,6 +60,6 @@ class Sponsor extends Model
 
     // Menambahkan dua kolom baru untuk status aktif dan selesai
     protected $fillable = [
-        'title', 'excerpt', 'body', 'user_id', 'image', 'published_at', 'created_at', 
+        'title', 'body', 'user_id', 'image', 'published_at', 'created_at', 'category', 'event',
     ];
 }

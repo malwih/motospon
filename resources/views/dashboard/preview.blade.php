@@ -39,12 +39,6 @@
                 <input type="hidden" name="rundown_times[]" value="{{ $time }}">
                 <input type="hidden" name="rundown_activities[]" value="{{ $rundown_activities[$index] }}">
             @endforeach
-
-            {{-- Submit Button --}}
-            <button type="submit"
-                class="block w-full mt-6 py-3 rounded-2xl text-center bg-green-500 text-white font-semibold hover:bg-green-600 transition duration-300">
-                Submit Proposal
-            </button>
         </form>
 
         {{-- Back Button --}}
@@ -57,7 +51,7 @@
 
 {{-- SweetAlert Confirmation Before Submit --}}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    ddocument.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('submitForm');
 
         form.addEventListener('submit', function (e) {
@@ -68,6 +62,7 @@
                 text: "Pastikan semua data sudah benar sebelum dikirim.",
                 icon: 'question',
                 showCancelButton: true,
+    showCancelButton: true,
   confirmButtonText: 'Ya',
   cancelButtonText: 'Batal',
   didOpen: () => {

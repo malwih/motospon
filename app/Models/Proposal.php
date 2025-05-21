@@ -7,26 +7,31 @@ use Illuminate\Database\Eloquent\Model;
 
 class Proposal extends Model
 {
+
+    public function sponsor()
+{
+    return $this->belongsTo(Sponsor::class, 'sponsor_id');
+}
+
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'sponsor_id',
+        'date_event',
+        'category',
+        'event',
+        'name_community',
+        'name_event',
+        'location',
+        'feedback_benefit',
+        'proposal_raw',
+        'submit',
         'is_active',
         'is_completed',
         'is_reject',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'is_completed' => 'boolean',
-        'is_reject' => 'boolean',
-    ];
-
-    public function sponsor()
-    {
-        return $this->belongsTo(Sponsor::class);
-    }
-
-
+    protected $table = 'proposals';
 
 }

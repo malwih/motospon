@@ -12,19 +12,31 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('proposals', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    $table->string('name_community');
-    $table->string('name_event');
-    $table->date('date_event');
-    $table->text('content');
-    $table->boolean('is_active')->default(false);
-    $table->boolean('is_completed')->default(false);
-    $table->boolean('is_reject')->default(false);
-    $table->timestamps();
-});
+            $table->id();
 
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('sponsor_id')->constrained()->onDelete('cascade');
 
+            // Informasi proposal
+            $table->string('category');
+            $table->string('event');
+            $table->string('name_community');
+            $table->string('name_event');
+            $table->string('location');
+            $table->date('date_event');
+            $table->text('feedback_benefit')->nullable();
+
+            // Simpan isi proposal mentah (optional)
+            $table->longText('proposal_raw')->nullable();
+
+            // Status
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_completed')->default(false);
+            $table->boolean('is_reject')->default(false);
+            $table->boolean('submit')->default(false);
+
+            $table->timestamps();
+        });
     }
 
     /**

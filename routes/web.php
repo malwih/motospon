@@ -70,7 +70,7 @@ Route::middleware(['auth'])->group(function () {
 Route::put('/dashboard/proposals/{id}/update-status', [ProposalController::class, 'updateStatus'])->name('proposals.updateStatus');
 
     // Halaman index mahasiswa setelah submit proposal
-    Route::get('/dashboard/index', [DashboardSponsorsController::class, 'showUserProposals'])->name('dashboard.index');
+    Route::get('/dashboard/index', [ProposalController::class, 'showUserProposals'])->name('dashboard.index');
 
     // Form tambah sponsor
     Route::get('/dashboard/addsponsor', [DashboardSponsorsController::class, 'addsponsor'])->name('addsponsor');
@@ -78,7 +78,20 @@ Route::put('/dashboard/proposals/{id}/update-status', [ProposalController::class
 
     // Proposal Preview (sebelum submit)
     Route::get('/dashboard/preview-proposal', [DashboardSponsorsController::class, 'showPreview'])->name('dashboard.previewProposal.show');
-    Route::post('/dashboard/preview-proposal', [DashboardSponsorsController::class, 'previewProposal'])->name('dashboard.previewProposal');
+    Route::post('/dashboard/preview-proposal', [ProposalController::class, 'previewProposal'])->name('dashboard.previewProposal');
+
+    // Proposal Preview (setelah submit)
+    Route::get('/proposal/preview/{id}', [ProposalController::class, 'previewFromDatabase'])->name('proposal.preview');
+
+    // Delete Proposal
+    Route::delete('/proposal/{id}', [ProposalController::class, 'destroy'])->name('proposal.delete');
+
+    // Edit Proposal
+    Route::get('/proposal/edit/{id}', [ProposalController::class, 'edit'])->name('proposal.edit');
+    Route::post('/proposal/update/{id}', [ProposalController::class, 'update'])->name('proposal.update');
+
+
+
 
     // Submit proposal sesudah preview
     Route::post('/dashboard/proposals/submit', [ProposalController::class, 'submitProposal'])->name('proposals.submit');

@@ -42,8 +42,9 @@ class Sponsor extends Model
 
     public function proposals()
 {
-    return $this->belongsToMany(Proposal::class, 'proposal_sponsor')->withTimestamps();
+    return $this->hasMany(Proposal::class);
 }
+
 
 
 

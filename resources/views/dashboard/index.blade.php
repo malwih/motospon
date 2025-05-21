@@ -1,6 +1,12 @@
 @extends('dashboard.layouts.main')
 
 @section('container')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
 <div class="p-10 sm:ml-80">
     <div class="p-6 border border-gray-200 rounded-lg shadow-md bg-white max-w-7xl mx-auto mt-20">
         <div class="flex justify-between flex-wrap items-center pb-4 border-b border-gray-300">
@@ -30,7 +36,11 @@
                     <thead class="bg-gray-100">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name Company</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sponsor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name Community</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name Event</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -40,6 +50,10 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $index + 1 }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">{{ $proposal->sponsor->title ?? 'N/A' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proposal->name_community }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proposal->name_event }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proposal->location }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">{{ $proposal->date_event }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if ($proposal->is_completed)
                                         <span class="text-green-600 font-semibold">Accepted</span>
@@ -52,6 +66,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
+                                    {{-- Accept / Reject buttons --}}
                                     @if ($proposal->is_active && !$proposal->is_completed && !$proposal->is_reject)
                                         <form action="{{ route('proposals.updateStatus', $proposal->id) }}" method="POST" class="inline-block">
                                             @csrf
@@ -70,14 +85,35 @@
                                                 Reject
                                             </button>
                                         </form>
-                                    @else
-                                        <span class="text-gray-400">No Action</span>
                                     @endif
+
+                                    {{-- Preview Button --}}
+                                    <div class="mt-2">
+                                        <a href="{{ route('proposal.preview', $proposal->id) }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium inline-block">
+                                            Preview
+                                        </a>
+                                    </div>
+
+                                    {{-- Edit Button --}}
+                                    <div class="mt-2">
+                                        <a href="{{ route('proposal.edit', $proposal->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm font-medium inline-block">
+                                            Edit
+                                        </a>
+                                    </div>
+
+                                    {{-- Delete Button --}}
+                                    <form action="{{ route('proposal.destroy', $proposal->id) }}"  method="POST" class="mt-2 inline-block delete-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                                            Delete
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">No proposals found.</td>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">No proposals found.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -86,4 +122,35 @@
         </section>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const forms = document.querySelectorAll('form.delete-form');
+
+    forms.forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Hapus Proposal?',
+                text: "Pastikan data sudah tidak diperlukan sebelum dihapus.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya',
+                cancelButtonText: 'Batal',
+                didOpen: () => {
+                    Swal.getConfirmButton().style.background = '#16a34a';
+                    Swal.getCancelButton().style.background = '#d33';
+                    Swal.getConfirmButton().style.color = '#fff';
+                    Swal.getCancelButton().style.color = '#fff';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+
 @endsection

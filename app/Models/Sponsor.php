@@ -12,11 +12,12 @@ class Sponsor extends Model
 
     // Menghubungkan dengan Model User
     public function users()
-    {
-        return $this->belongsToMany(User::class)
-            ->withPivot('is_active', 'is_completed')
-            ->withTimestamps();
-    }
+{
+    return $this->belongsToMany(User::class, 'proposal_sponsor')
+                ->withPivot('is_active', 'is_completed', 'is_reject')
+                ->withTimestamps();
+}
+
 
     // protected $fillable = ['title','excerpt','body'];
     protected $guarded = ['id'];
@@ -38,6 +39,13 @@ class Sponsor extends Model
             )
         );
     }
+
+    public function proposals()
+{
+    return $this->belongsToMany(Proposal::class, 'proposal_sponsor')->withTimestamps();
+}
+
+
 
     public function author()
     {

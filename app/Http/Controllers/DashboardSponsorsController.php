@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\News;
 use App\Models\User;
 use App\Models\Sponsor;
-use App\Models\SponsorUser;
+use App\Models\Proposal;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -34,15 +34,18 @@ class DashboardSponsorsController extends Controller
     }
 
     public function dashboard()
-    {
-        $user = Auth::user();
-        $sponsors = $user->sponsors; // Mengambil daftar sponsor yang sudah diambil oleh user
+{
+    $user = Auth::user();
+    $sponsors = $user->sponsors;
+    $proposals = Proposal::where('user_id', $user->id)->get();
 
-        return view('dashboard.index', [
-            'user' => $user,
-            'sponsors' => $sponsors,
-        ]);
-    }
+    return view('dashboard.index', [
+        'user' => $user,
+        'sponsors' => $sponsors,
+        'proposals' => $proposals, // ✅ tambahkan ini
+    ]);
+}
+
 
 
     /**
@@ -173,8 +176,8 @@ class DashboardSponsorsController extends Controller
 
         $user = auth()->user();
 
-        // Periksa apakah pengguna memiliki kursus yang aktif pada SponsorUser
-        $activeSponsor = SponsorUser::where('user_id', $user->id)
+        // Periksa apakah pengguna memiliki kursus yang aktif pada Proposal
+        $activeSponsor = Proposal::where('user_id', $user->id)
             ->where('is_active', true)
             ->first();
 
@@ -183,7 +186,7 @@ class DashboardSponsorsController extends Controller
         }
 
         // Simpan data ke pivot table sponsor_user
-        $sponsorUser = SponsorUser::create([
+        $sponsorUser = Proposal::create([
             'sponsor_id' => $validatedData['sponsor_id'],
             'user_id' => $user->id,
             'is_active' => true,
@@ -199,30 +202,30 @@ class DashboardSponsorsController extends Controller
 
 
     public function storeSponsor(Request $request)
-    {
-        $validatedData = $request->validate([
-            'sponsor_id' => 'required|exists:sponsors,id',
-            'category' => 'required',
-            'event' => 'required',
-        ]);
+{
+    $validatedData = $request->validate([
+        'sponsor_id' => 'required|exists:sponsors,id',
+        'category' => 'required',
+        'event' => 'required',
+    ]);
 
-        $user = auth()->user();
+    $user = auth()->user();
 
-        // Simpan data ke pivot table sponsor_user
-        $sponsorUser = SponsorUser::create([
-            'sponsor_id' => $validatedData['sponsor_id'],
-            'user_id' => $user->id,
-            'is_active' => true, // Atur status aktif ke true jika baru ditambahkan
-            'is_completed' => false, // Default nilai is_completed ke false
-            // ... (menambahkan field lainnya)
-        ]);
+    $proposal = Proposal::create([
+        'sponsor_id' => $validatedData['sponsor_id'],
+        'user_id' => $user->id,
+        'category' => $validatedData['category'],
+        'event' => $validatedData['event'],
+        'is_active' => true,
+        'is_completed' => false,
+        'is_reject' => false,
+    ]);
 
-        if ($sponsorUser) {
-            return back()->with('success', 'Sponsor added successfully.');
-        } else {
-            return back()->with('error', 'Failed to add sponsor.');
-        }
-    }
+    return redirect()->route('dashboard')->with('success', 'Proposal berhasil disubmit!');
+}
+
+
+
 
 private function generateProposal(array $data): string
 {
@@ -351,24 +354,30 @@ public function previewProposal(Request $request)
         'date' => 'required|date_format:d/m/y',
         'feedback_benefit' => 'required|string',
         'budget_items' => 'required|array',
-'budget_items.*' => 'required|string',
-'budget_descriptions' => 'required|array',
-'budget_descriptions.*' => 'required|string',
-'budget_costs' => 'required|array',
-'budget_costs.*' => 'required|numeric',
-
+        'budget_items.*' => 'required|string',
+        'budget_descriptions' => 'required|array',
+        'budget_descriptions.*' => 'required|string',
+        'budget_costs' => 'required|array',
+        'budget_costs.*' => 'required|numeric',
         'rundown_times' => 'required|array',
-'rundown_times.*' => 'required|string',
-'rundown_activities' => 'required|array',
-'rundown_activities.*' => 'required|string',
-
-        // 'sign' => 'required|string',
+        'rundown_times.*' => 'required|string',
+        'rundown_activities' => 'required|array',
+        'rundown_activities.*' => 'required|string',
     ]);
 
     $sponsor = Sponsor::findOrFail($request->sponsor_id);
 
     $proposal = $this->generateProposal([
+        ...$request->all(),
         'sponsor_name' => $sponsor->title,
+    ]);
+
+    return view('dashboard.proposal-preview', [
+        'proposal' => $proposal,
+        'raw_proposal' => $request->proposal ?? json_encode($request->all()),
+
+        // Kirim semua data yang dibutuhkan Blade
+        'sponsor_id' => $request->sponsor_id,
         'category' => $request->category,
         'event' => $request->event,
         'name_community' => $request->name_community,
@@ -376,16 +385,30 @@ public function previewProposal(Request $request)
         'location' => $request->location,
         'date' => $request->date,
         'feedback_benefit' => $request->feedback_benefit,
-        'budget_items' => $request->budget_items,
-'budget_descriptions' => $request->budget_descriptions,
-'budget_costs' => $request->budget_costs,
-
-        'rundown_times' => $request->rundown_times,
-        'rundown_activities' => $request->rundown_activities,
-        'sign' => $request->sign,
+        'budget_items' => $request->budget_items ?? [],
+        'budget_descriptions' => $request->budget_descriptions ?? [],
+        'budget_costs' => $request->budget_costs ?? [],
+        'rundown_times' => $request->rundown_times ?? [],
+        'rundown_activities' => $request->rundown_activities ?? [],
     ]);
+}
 
-    return view('dashboard.sponsors.proposal-preview', compact('proposal'));
+
+    public function showPreview()
+{
+    // Optional: cegah akses langsung tanpa POST
+    return redirect()->route('dashboard'); // Atau tampilkan view default
+}
+
+public function showUserProposals()
+{
+    // Ambil data proposals milik user yang login
+    $userId = auth()->id();
+
+    $proposals = Proposal::where('user_id', $userId)->get();
+
+    // Kirim ke view
+    return view('dashboard.index', compact('proposals'));
 }
 
 }

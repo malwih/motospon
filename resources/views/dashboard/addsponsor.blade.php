@@ -183,17 +183,12 @@
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row gap-4 mt-6">
-        <button type="submit"
-          class="w-full sm:w-auto px-6 py-3 bg-orange-500 text-white rounded-2xl font-semibold hover:bg-orange-600 transition">
-          Submit Sponsor
+      
+        <button type="submit" formaction="{{ route('dashboard.previewProposal') }}"
+          class="block w-full mt-4 py-3 rounded-2xl text-center bg-orange-500 text-white font-semibold hover:bg-orange-700 transition duration-300">
+          Next
         </button>
-
-        <button type="submit" formaction="{{ route('sponsors.previewProposal') }}"
-          class="w-full sm:w-auto px-6 py-3 bg-green-500 text-white rounded-2xl font-semibold hover:bg-green-600 transition">
-          Next (Preview Proposal)
-        </button>
-      </div>
+  
 
       <a href="/dashboard/sponsors"
         class="block w-full mt-4 py-3 rounded-2xl text-center bg-blue-500 text-white font-semibold hover:bg-blue-700 transition duration-300">

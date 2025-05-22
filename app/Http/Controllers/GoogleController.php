@@ -19,64 +19,75 @@ class GoogleController extends Controller
     }
 
     public function handleGoogleCallback()
-{
-    try {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
 
-        $findUser = User::where('email', $googleUser->email)->first();
+            $findUser = User::where('email', $googleUser->email)->first();
 
-        if ($findUser) {
-            Auth::login($findUser);
-            return redirect()->intended('dashboard');
+            if ($findUser) {
+                Auth::login($findUser);
+                return $this->redirectToDashboard($findUser);
+            } else {
+                $avatarUrl = $googleUser->avatar;
+                $avatarContents = file_get_contents($avatarUrl);
+                $filename = 'avatars/' . Str::random(20) . '.jpg';
+                Storage::disk('public')->put($filename, $avatarContents);
+
+                $newUser = User::create([
+                    'name' => $googleUser->name,
+                    'username' => $googleUser->name . '_' . Str::random(5),
+                    'email' => $googleUser->email,
+                    'password' => Hash::make('12345'),
+                    'id_google' => $googleUser->id,
+                    'email_verified_at' => now(),
+                    'avatar' => $filename,
+                ]);
+
+                Auth::login($newUser);
+                return redirect()->route('choose.account.type');
+            }
+        } catch (Exception $e) {
+            dd($e->getMessage());
+        }
+    }
+
+    protected function redirectToDashboard(User $user)
+    {
+        if ($user->is_admin) {
+            return redirect()->route('dashboard.admin');
+        } elseif ($user->is_company) {
+            return redirect()->route('dashboard.company');
+        } elseif ($user->is_community) {
+            return redirect()->route('dashboard.community');
         } else {
-            $avatarUrl = $googleUser->avatar;
-            $avatarContents = file_get_contents($avatarUrl);
-            $filename = 'avatars/' . Str::random(20) . '.jpg';
-            Storage::disk('public')->put($filename, $avatarContents);
-
-            // Simpan data dasar user tanpa jenis akun
-            $newUser = User::create([
-                'name' => $googleUser->name,
-                'username' => $googleUser->name . '_' . Str::random(5),
-                'email' => $googleUser->email,
-                'password' => Hash::make('12345'),
-                'id_google' => $googleUser->id,
-                'email_verified_at' => now(),
-                'avatar' => $filename,
-            ]);
-
-            Auth::login($newUser);
-            // Redirect ke halaman pemilihan jenis akun
             return redirect()->route('choose.account.type');
         }
-    } catch (Exception $e) {
-        dd($e->getMessage());
-    }
-}
-public function chooseAccountType()
-{
-    return view('auth.choose-account-type');
-}
-
-public function storeAccountType(Request $request)
-{
-    $request->validate([
-        'account_type' => 'required|in:company,community',
-    ]);
-
-    $user = Auth::user();
-
-    if ($request->account_type === 'company') {
-        $user->is_company = 1;
-        $user->is_community = 0;
-    } else {
-        $user->is_company = 0;
-        $user->is_community = 1;
     }
 
-    $user->save();
+    public function chooseAccountType()
+    {
+        return view('auth.choose-account-type');
+    }
 
-    return redirect()->intended('dashboard');
-}
+    public function storeAccountType(Request $request)
+    {
+        $request->validate([
+            'account_type' => 'required|in:company,community',
+        ]);
 
+        $user = Auth::user();
+
+        if ($request->account_type === 'company') {
+            $user->is_company = 1;
+            $user->is_community = 0;
+        } else {
+            $user->is_company = 0;
+            $user->is_community = 1;
+        }
+
+        $user->save();
+
+        return $this->redirectToDashboard($user);
+    }
 }

@@ -2,9 +2,16 @@
 @php use Illuminate\Support\Str; @endphp
 @section('container')
 
+<!-- Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="p-10 sm:ml-64">
     <div class="p-6 border border-gray-200 rounded-lg shadow-md bg-white max-w-3xl mx-auto mt-20">
-
         <div class="flex justify-between items-center pb-4 border-b border-gray-300">
             <h1 class="text-3xl font-bold text-gray-900">Edit Profile</h1>
         </div>
@@ -15,11 +22,10 @@
                 <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
             </svg>
             {{ session('success') }}
-            <button type="button" class="ml-auto text-green-800 hover:text-green-900">&times;</button>
         </div>
         @endif
 
-        <form action="{{ route('editprofile.update') }}" method="POST" enctype="multipart/form-data" class="mt-6">
+        <form id="editForm" action="{{ route('editprofile.update') }}" method="POST" enctype="multipart/form-data" class="mt-6">
             @csrf
             @method('PUT')
 
@@ -42,6 +48,7 @@
                     <input type="file" name="avatar" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 rounded-full cursor-pointer">
                 </div>
             </div>
+            <input type="hidden" name="cropped_avatar" id="croppedAvatar">
             @error('avatar')
                 <p class="text-sm text-red-600 text-center mt-1">{{ $message }}</p>
             @enderror
@@ -108,5 +115,97 @@
         </form>
     </div>
 </div>
+
+{{-- Cropper Modal --}}
+<div id="cropModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-screen overflow-auto">
+        <div class="text-lg font-bold mb-4 text-center">Crop Your Avatar</div>
+        <div class="flex justify-center">
+            <img id="imageToCrop" class="max-w-full max-h-96 object-contain rounded-md shadow" />
+        </div>
+        <div class="mt-4 flex justify-end space-x-2">
+            <button id="cancelCrop" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</button>
+            <button id="confirmCrop" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Crop</button>
+        </div>
+    </div>
+</div>
+
+
+{{-- JS for SweetAlert & Cropper --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('editForm');
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Update Profile?',
+                text: "Pastikan semua data sudah benar sebelum diupdate.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya',
+                cancelButtonText: 'Batal',
+                didOpen: () => {
+                    Swal.getConfirmButton().style.background = '#16a34a';
+                    Swal.getCancelButton().style.background = '#d33';
+                    Swal.getConfirmButton().style.color = '#fff';
+                    Swal.getCancelButton().style.color = '#fff';
+                }
+            }).then((result) => {
+                if (result.isConfirmed) form.submit();
+            });
+        });
+
+        // Cropper logic
+        let cropper;
+        const avatarInput = document.querySelector('input[name="avatar"]');
+        const cropModal = document.getElementById('cropModal');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const croppedAvatarInput = document.getElementById('croppedAvatar');
+        const previewImage = document.querySelector('.group img');
+
+        avatarInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                imageToCrop.src = event.target.result;
+                cropModal.classList.remove('hidden');
+
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('cancelCrop').addEventListener('click', () => {
+            cropModal.classList.add('hidden');
+            avatarInput.value = '';
+            cropper?.destroy();
+        });
+
+        document.getElementById('confirmCrop').addEventListener('click', () => {
+            const canvas = cropper.getCroppedCanvas({
+                width: 300,
+                height: 300,
+            });
+            canvas.toBlob(function (blob) {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    const base64data = reader.result;
+                    croppedAvatarInput.value = base64data;
+                    previewImage.src = base64data;
+                    cropModal.classList.add('hidden');
+                    cropper.destroy();
+                };
+                reader.readAsDataURL(blob);
+            });
+        });
+    });
+</script>
 
 @endsection

@@ -21,23 +21,24 @@ class ProposalController extends Controller
 
     // Dashboard perusahaan - Hanya proposal yang sudah disubmit
     public function companyDashboard()
-    {
-        $proposals = Proposal::with(['sponsor', 'user'])
-            ->where('submit', true)
-            ->latest()
-            ->get();
+{
+    $proposals = Proposal::where('hidden_from_company', false)->get();
 
-        return view('dashboard.index', compact('proposals'));
-    }
+    return view('dashboard.company.index', compact('proposals'));
+}
+
+
+
+
 
     // Dashboard user - Proposal milik user
-    public function userDashboard()
+    public function communityDashboard()
     {
-        $proposals = Proposal::with('sponsor')
-            ->where('user_id', Auth::id())
-            ->get();
+        $user = Auth::user();
+    $sponsors = $user->sponsors;
+    $proposals = Proposal::where('user_id', $user->id)->get();
 
-        return view('dashboard.index', compact('proposals'));
+    return view('dashboard.community', compact('user', 'sponsors', 'proposals'));
     }
 
     // Preview proposal (sebelum submit)
@@ -96,7 +97,7 @@ class ProposalController extends Controller
     $proposal->is_active = true; // Aktifkan supaya tampil di dashboard
     $proposal->save();
 
-    return redirect()->route('dashboard')->with('success', 'Proposal berhasil dikirim.');
+    return redirect()->route('dashboard')->with('success', 'Proposal berhasil submitted!');
 }
 
 
@@ -111,7 +112,7 @@ class ProposalController extends Controller
                 'is_active' => false,
                 'is_reject' => false,
             ]);
-            return back()->with('status', 'Proposal accepted successfully.');
+            return back()->with('status', 'Proposal accepted successfully!');
         }
 
         if ($request->action === 'reject') {
@@ -120,7 +121,7 @@ class ProposalController extends Controller
                 'is_active' => false,
                 'is_reject' => true,
             ]);
-            return back()->with('status', 'Proposal rejected successfully.');
+            return back()->with('status', 'Proposal rejected successfully!');
         }
 
         return back()->with('status', 'Invalid action.');
@@ -139,7 +140,7 @@ class ProposalController extends Controller
     $proposal = Proposal::findOrFail($id);
     $proposal->delete();
 
-    return redirect()->route('dashboard')->with('status', 'Proposal berhasil dihapus.');
+    return redirect()->route('dashboard')->with('status', 'Proposal has been deleted!');
 }
 
 
@@ -433,7 +434,18 @@ public function update(Request $request, $id)
         'proposal_raw' => $raw,
     ]);
 
-    return redirect()->route('dashboard')->with('success', 'Proposal berhasil diperbarui.');
+    return redirect()->route('dashboard')->with('success', 'Proposal has been updated!.');
 }
+
+public function hideFromCompany($id)
+{
+    $proposal = Proposal::findOrFail($id);
+    $proposal->hidden_from_company = true;
+    $proposal->save();
+
+    return redirect()->back()->with('status', 'Proposal has been deleted!');
+}
+
+
 
 }

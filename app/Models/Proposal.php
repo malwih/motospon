@@ -34,4 +34,9 @@ class Proposal extends Model
 
     protected $table = 'proposals';
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

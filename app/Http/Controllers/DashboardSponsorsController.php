@@ -33,18 +33,40 @@ class DashboardSponsorsController extends Controller
         ]);
     }
 
-    public function dashboard()
+    public function dashboard($accountType = null)
 {
     $user = Auth::user();
+
+    if (!$accountType) {
+        // Otomatis arahkan sesuai tipe user
+        if ($user->is_admin) {
+            return redirect('/dashboard/admin');
+        } elseif ($user->is_company) {
+            return redirect('/dashboard/company');
+        } elseif ($user->is_community) {
+            return redirect('/dashboard/community');
+        } else {
+            return redirect()->route('choose.account.type');
+        }
+    }
+
+    // Validasi tipe akun
+    if (!in_array($accountType, ['admin', 'company', 'community'])) {
+        abort(404); // atau redirect ke default
+    }
+
     $sponsors = $user->sponsors;
     $proposals = Proposal::where('user_id', $user->id)->get();
 
-    return view('dashboard.index', [
+    return view('dashboard.' . $accountType, [
         'user' => $user,
         'sponsors' => $sponsors,
-        'proposals' => $proposals, // ✅ tambahkan ini
+        'proposals' => $proposals,
     ]);
 }
+
+
+
 
 
 

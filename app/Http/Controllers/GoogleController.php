@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Log;
+
 
 class GoogleController extends Controller
 {
@@ -48,9 +50,16 @@ class GoogleController extends Controller
                 return redirect()->route('choose.account.type');
             }
         } catch (Exception $e) {
-            dd($e->getMessage());
-        }
+        // Gantilah ini:
+        // dd($e->getMessage());
+
+        // Dengan log (untuk disimpan ke storage/logs/laravel.log)
+        Log::error('Google OAuth callback failed: ' . $e->getMessage());
+
+        // Redirect ke halaman login dengan error message
+        return redirect()->route('login')->with('error', 'Login dengan Google gagal. Silakan coba lagi.');
     }
+}
 
     protected function redirectToDashboard(User $user)
     {
